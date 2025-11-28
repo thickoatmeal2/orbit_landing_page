@@ -20,12 +20,24 @@ class MappedRequestHandler(SimpleHTTPRequestHandler):
         path = urllib.parse.unquote(self.path)
 
         # If the site requests one of the special runtime/component paths,
-        # map to the file with the same basename located at the server root.
-        # Map common Wix/hosted site virtual paths to local files by basename.
+        # map virtual basenames to actual file names in this repo.
+        # This mapping lets us give friendly filenames while still
+        # serving requests for original hashed names the runtime may use.
+        mapping = {
+            # old hashed runtime -> friendly name
+            'sites-runtime.4088aa4f2abed8aab88a6ac77563105a8e8bc38d897b4a5cf5373dd8c43dfa78.js': 'runtime.js',
+            # old hashed component bundle -> friendly name
+            'ad1dffaeb8d609c7ddd33890a402e4d217e04ca2.js': 'components.js',
+            'ad1dffaeb8d609c7ddd33890a402e4d217e04ca2.css': 'components.css'
+        }
+
         if path.startswith(("/_runtimes/", "/_components/v2/", "/_components/", "/_assets/")):
             basename = path.split("/")[-1]
             if basename:
-                self.path = "/" + basename
+                # if the runtime requests the original hashed filename, serve
+                # the renamed friendly file instead (fallback to basename).
+                target = mapping.get(basename, basename)
+                self.path = "/" + target
 
         # Many deployments request an _index.json under a GUID folder.
         # Serve the repository's `_index.json` for any such request.
