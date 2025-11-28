@@ -10,8 +10,21 @@ It listens on port 8000 by default.
 """
 from http.server import SimpleHTTPRequestHandler, HTTPServer
 import urllib
+import os
+import argparse
 
-PORT = 8000
+
+def get_port(default=8000):
+    # Priority: command-line arg > PORT env var > default
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("-p", "--port", type=int, help="port to listen on")
+    args, _ = parser.parse_known_args()
+    if args.port:
+        return args.port
+    env_port = os.environ.get("PORT")
+    if env_port and env_port.isdigit():
+        return int(env_port)
+    return default
 
 
 class MappedRequestHandler(SimpleHTTPRequestHandler):
@@ -48,11 +61,13 @@ class MappedRequestHandler(SimpleHTTPRequestHandler):
         return super().do_GET()
 
 
-def run(server_class=HTTPServer, handler_class=MappedRequestHandler):
-    server_address = ("", PORT)
+def run(server_class=HTTPServer, handler_class=MappedRequestHandler, port=None):
+    if port is None:
+        port = get_port()
+    server_address = ("", port)
     httpd = server_class(server_address, handler_class)
     sa = httpd.socket.getsockname()
-    print(f"Serving HTTP on {sa[0]} port {sa[1]} (http://localhost:{PORT}/) ...")
+    print(f"Serving HTTP on {sa[0]} port {sa[1]} (http://localhost:{port}/) ...")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
@@ -61,4 +76,5 @@ def run(server_class=HTTPServer, handler_class=MappedRequestHandler):
 
 
 if __name__ == '__main__':
+    # Allow override via env or command-line
     run()

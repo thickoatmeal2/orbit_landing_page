@@ -1,25 +1,29 @@
 # Orbit Landing Page
 
-Minimal static landing page exported from Figma and adapted to run locally.
+This repository contains a static landing page exported from Figma and adapted to run locally.
 
-## Quick start
+## Run in the browser
 
-Prerequisites: `python3` (macOS ships with Python; ensure it's Python 3.x).
+Prerequisite: `python3` installed.
 
-Recommended (mapped) server (preserves Figma runtime/component paths):
+Recommended (uses the provided mapped server which preserves virtual asset paths):
 
 ```bash
-cd /Users/jacob/Desktop/Orbit_landing_page
+# run the mapped server (default port 8000)
 python3 server.py
-open "http://localhost:8000"
+
+# then open in your browser:
+http://localhost:8000
 ```
 
 Alternative (simple static server):
 
 ```bash
-cd /Users/jacob/Desktop/Orbit_landing_page
+# serve the current directory on port 8000
 python3 -m http.server 8000
-open "http://localhost:8000"
+
+# then open:
+http://localhost:8000
 ```
 
 Optional live reload (install once):
@@ -29,50 +33,13 @@ Optional live reload (install once):
 live-server --port=3000
 ```
 
-## What this repo contains
+## What to expect
 
-- `index.html` — main HTML file produced by Figma Sites; it references runtime and component bundles.
-- `server.py` — small Python server that rewrites virtual asset paths (see below) so the site can load bundled files present in the project root.
-- `_index.json`, `ad1dffaeb8d609c7ddd33890a402e4d217e04ca2.css`, `ad1dffaeb8d609c7ddd33890a402e4d217e04ca2.js`, `sites-runtime.*.js` and other assets — static files used by the site.
+- `index.html` is the main entry point and bootstraps the site runtime.
+- `server.py` rewrites certain virtual request paths (used by exported runtimes) so the site can load local asset files without 404s.
 
-## How `server.py` helps
+If a resource still 404s, open DevTools → Network, note the failing request path, and add a mapping in `server.py` or place the file with the expected basename in the project root.
 
-Figma-hosted sites sometimes reference assets using virtual paths such as:
+If you need the server to run on a different port or want the README expanded with development steps, tell me which option you prefer.
 
-- `/_runtimes/<file>`
-- `/_components/v2/<file>`
-- `/_json/<guid>/_index.json`
-
-`server.py` rewrites these requests to serve the actual files that live at the project root (it maps the basename of the requested path to `/basename`). This avoids 404s when the runtime expects those virtual paths.
-
-If you add more assets that the site requests under paths like `/_assets/` or other virtual folders, update `server.py` to map them to the correct file names.
-
-## Adding content or images
-
-- Place image files in the project root (or a subfolder) and reference them in the HTML as `/my-image.png` or `/images/my-image.png`.
-- Edit `index.html` to add sections or content. To avoid runtime overwrites, place your custom static content below the existing `#container` element (the project currently loads a runtime into `#container`).
-
-## Common troubleshooting
-
-- 404s: Open browser DevTools → Network, note the path, and add a mapping in `server.py` if needed.
-- Port in use: If `python3 server.py` fails with `Address already in use`, free the port with `lsof -iTCP:8000 -sTCP:LISTEN -n -P` and `kill <PID>` or choose a different port.
-
-## GitHub
-
-Remote repo: `https://github.com/thickoatmeal2/orbit_landing_page.git`
-
-To update README or push changes:
-
-```bash
-git add README.md
-git commit -m "Add README"
-git push
-```
-
-## Next steps I can help with
-
-- Add a hero/section (I can insert sample content into `index.html`).
-- Add a small script to accept a port argument or environment variable in `server.py`.
-- Add CI or a simple `Makefile` for common tasks.
-
-If you want, tell me which of the above to do next, or ask specific questions about any file in the repo.
+Short: run `python3 server.py` and open `http://localhost:8000` in a browser.
